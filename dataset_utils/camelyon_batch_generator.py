@@ -84,7 +84,7 @@ class DataGenerator(tf.keras.utils.Sequence):
                         except:
                             bag_label = references["val_label"].loc[references["val"] == base_name].values.tolist()[0]
                     else:
-                        bag_label = references["test_label"].loc[references["transformer_k"] == base_name].values.tolist()[0]
+                        bag_label = references["test_label"].loc[references["test"] == base_name].values.tolist()[0]
                 elif self.dataset == "tcga":
                     bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
                 elif self.dataset == "sarcoma":
