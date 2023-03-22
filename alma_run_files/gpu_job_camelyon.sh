@@ -13,5 +13,5 @@ source /opt/software/applications/anaconda/3/etc/profile.d/conda.sh
 conda activate exp_env
 cd /home/ofourkioti/Projects/Neighbor_constrained_attention_based_MIL/
 
-python run.py  --k 2 --dataset camelyon --transformer_k_2 k_6 --feature_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/multi_magnification_project/camelyon_data/tf_feats_256/resnet_feats/h5_files --label_file label_files/camelyon_data.csv --csv_files camelyon_csv_files  --epoch 100 --save_dir cam_Saved_model
+python run.py  --k 2 --dataset camelyon --transformer_k_2 --feature_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/multi_magnification_project/camelyon_data/tf_feats_256/resnet_feats/h5_files --label_file label_files/camelyon_data.csv --csv_files camelyon_csv_files  --epoch 100 --save_dir cam_Saved_model
 #python run_simclr.py --simclr_path  lipo_SIMCLR_checkpoints --feature_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/multi_magnification_project/SAR_data/simclr_imgs/h5_files/  --csv_file lipo_csv_files/splits_0.csv --simclr_batch_size 1024
