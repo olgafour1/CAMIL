@@ -125,7 +125,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         sparse_matrix = tf.sparse.SparseTensor(indices=list(zip(rows, columns)),
                                                    values=values,
                                                    dense_shape=[Idx.shape[0], Idx.shape[0]])
-
+        sparse_matrix = tf.sparse.reorder(sparse_matrix)
         #     sparse_matrix = tf.sparse.SparseTensor(indices=list(zip(rows, columns)),
         #                                            values=tf.ones(columns.shape, tf.float32),
         #                                            dense_shape=[Idx.shape[0], Idx.shape[0]])
