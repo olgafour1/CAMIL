@@ -97,7 +97,7 @@ class CHARM:
 
         train_gen = DataGenerator(args=args, fold_id=fold, batch_size=1, shuffle=False, filenames=train_bags,
                                       train=True)
-        val_gen = DataGenerator(args=args, fold_id=fold, batch_size=1, filenames=val_bags, train=True)
+        val_gen = DataGenerator(args=args, fold_id=fold, batch_size=1, shuffle=False,filenames=val_bags, train=True)
 
         if not os.path.exists(os.path.join(args.save_dir, fold)):
             os.makedirs(os.path.join(args.save_dir, fold, args.experiment_name), exist_ok=True)
