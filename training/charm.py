@@ -16,15 +16,6 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import BinaryCrossentropy
 from training.metrics import eval_metric
 from training.transformers import Encoder_f
-import random
-os.environ['TF_DETERMINISTIC_OPS'] = '1'
-
-def reset_random_seeds():
-
-   os.environ['PYTHONHASHSEED']=str(12321)
-   tf.random.set_seed(12321)
-   np.random.seed(12321)
-   random.seed(12321)
 
 
 class CHARM:
@@ -45,7 +36,7 @@ class CHARM:
         transformer_layers = 1
         num_heads = 1
         mlp_dim = 128
-        reset_random_seeds()
+
 
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
         self.inputs = {
@@ -76,8 +67,6 @@ class CHARM:
     @property
     def model(self):
         return self.net
-
-
 
     def train(self, train_bags, fold, val_bags, args):
         """
