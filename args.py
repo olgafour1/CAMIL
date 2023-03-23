@@ -17,11 +17,6 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description='Train Graph Att net')
 
-    parser.add_argument('--strategy', dest='strategy',
-                        choices=["attcls", "max"],
-                        help='pooling strategy for the second model',
-                        default='attcls', type=str
-                        )
     parser.add_argument('--dataset', dest='dataset',
                         help='select dataset',
                         choices=["camelyon","tcga", 'sarcoma'],
@@ -56,14 +51,14 @@ def parse_args():
                         choices=range(1,12), metavar="[1-12]")
     parser.add_argument('--feature_path', dest='feature_path',
                         help='directory where the images are stored',
-                        default='/home/admin_ofourkioti/Documents/resnet_feats/h5_files/', type=str)
+                        default='/home/admin_ofourkioti/Documents/camelyon/resnet_feats/h5_files/', type=str)
     parser.add_argument('--dataset_path', dest='data_path',
                         help='directory where the images are stored',
                         default="",
                         type=str)
     parser.add_argument('--experiment_name', dest='experiment_name',
                         help='the name of the experiment needed for the logs',
-                        default="transformer_k", type=str)
+                        default="test", type=str)
     parser.add_argument('--simclr_batch_size', dest='simclr_batch_size',
                         help='batch size used bu the siamese network',
                         default=512, type=int)

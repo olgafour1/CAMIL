@@ -1,4 +1,5 @@
 import os
+os.environ['PYTHONHASHSEED']=str(12321)
 import numpy as np
 from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score
 import tensorflow as tf
@@ -12,11 +13,18 @@ from training.custom_layers import NeighborAggregator, CustomAttention, Last_Sig
 from flushed_print import print
 import time
 from collections import deque
-from training.SIMCLR import SIMCLR
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import BinaryCrossentropy
 from training.metrics import eval_metric
 from training.transformers import Encoder_f
+import random
+def reset_random_seeds():
+
+   os.environ['PYTHONHASHSEED']=str(12321)
+   tf.random.set_seed(12321)
+   np.random.seed(12321)
+   random.seed(12321)
+
 
 class CHARM:
     def __init__(self, args):
@@ -36,6 +44,7 @@ class CHARM:
         transformer_layers = 1
         num_heads = 1
         mlp_dim = 128
+        reset_random_seeds()
 
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
         self.inputs = {
@@ -60,6 +69,7 @@ class CHARM:
 
         out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
                            pooling_mode='sum', subtyping=False)(attn_output)
+
         self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha])
 
     @property

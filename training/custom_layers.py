@@ -1,7 +1,14 @@
+import os
+os.environ['PYTHONHASHSEED'] = str(12321)
+import random
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras import initializers, regularizers
 
+tf.random.set_seed(12321)
+np.random.seed(12321)
+random.seed(12321)
 class MILAttentionLayer(tf.keras.layers.Layer):
     """Implementation of the attention-based Deep MIL layer.
     Args:

@@ -1,5 +1,5 @@
 import pandas as pd
-from args import parse_args, set_seed
+from args import parse_args
 from training.charm import CHARM
 import os
 from flushed_print import print
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     print(args)
 
     adj_dim = None
-    set_seed(args.seed_value)
+
 
     csv_files=args.csv_files
     acc=[]
@@ -42,7 +42,6 @@ if __name__ == "__main__":
             val_bags = references.apply(lambda row: func_val(row.val), axis=1).dropna().values.tolist()
 
             test_bags = references.apply(lambda row: func_val(row.test), axis=1).dropna().values.tolist()
-
 
             train_net = CHARM(args)
 
