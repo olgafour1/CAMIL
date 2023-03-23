@@ -4,6 +4,17 @@ from training.charm import CHARM
 import os
 from flushed_print import print
 import numpy as np
+import random
+import tensorflow as tf
+
+def set_seed(seed: int = 42) -> None:
+  random.seed(seed)
+  np.random.seed(seed)
+  tf.random.set_seed(seed)
+  tf.experimental.numpy.random.seed(seed)
+  # When running on the CuDNN backend, two further options must be set
+  os.environ['TF_CUDNN_DETERMINISTIC'] = '1'
+  os.environ['TF_DETERMINISTIC_OPS'] = '1'
 
 
 if __name__ == "__main__":
@@ -14,7 +25,7 @@ if __name__ == "__main__":
     print(args)
 
     adj_dim = None
-
+    set_seed(12321)
 
     csv_files=args.csv_files
     acc=[]
