@@ -1,5 +1,4 @@
 import os
-os.environ['PYTHONHASHSEED']=str(12321)
 import numpy as np
 from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score
 import tensorflow as tf
@@ -18,6 +17,8 @@ from tensorflow.keras.losses import BinaryCrossentropy
 from training.metrics import eval_metric
 from training.transformers import Encoder_f
 import random
+os.environ['TF_DETERMINISTIC_OPS'] = '1'
+
 def reset_random_seeds():
 
    os.environ['PYTHONHASHSEED']=str(12321)
