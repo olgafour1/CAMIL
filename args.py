@@ -38,7 +38,7 @@ def parse_args():
                         default=0.9, type=float)
     parser.add_argument('--epochs', dest='epochs',
                         help='number of epochs to train GRAPH MIL',
-                        default=100, type=int)
+                        default=50, type=int)
     parser.add_argument('--seed_value', dest='seed_value',
                         help='use same seed value for reproducability',
                         default=12321, type=int)

@@ -5,7 +5,6 @@ import h5py
 import pandas as pd
 from sklearn import preprocessing
 
-
 class DataGenerator(tf.keras.utils.Sequence):
     def __init__(self, filenames, fold_id, args, shuffle=False, train=True, batch_size=1):
         self.filenames = filenames

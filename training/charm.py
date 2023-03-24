@@ -37,7 +37,6 @@ class CHARM:
         num_heads = 1
         mlp_dim = 128
 
-
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
         self.inputs = {
             'bag': Input(self.input_shape),
@@ -51,7 +50,8 @@ class CHARM:
         value = self.wv(dense)
         local_attn_output = multiply([norm_alpha, value], name="mul_1")
 
-        local_attn_output=local_attn_output+dense
+        local_attn_output=local_attn_output + dense
+
         encoder_output = tf.squeeze(Encoder_f(transformer_layers, mlp_dim, num_heads, tf.expand_dims(local_attn_output, axis=0)))
 
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
