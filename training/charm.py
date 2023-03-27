@@ -16,6 +16,7 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import BinaryCrossentropy
 from training.metrics import eval_metric
 from training.transformers import Encoder_f
+from nystromformer.nystromformer import Nystromformer
 
 
 class CHARM:
@@ -37,6 +38,7 @@ class CHARM:
         num_heads = 1
         mlp_dim = 128
 
+        self.nyst_att = Nystromformer(dim=512,dim_head=64,heads=8,depth=1,num_landmarks=256,pinv_iterations=6)
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
         self.inputs = {
             'bag': Input(self.input_shape),
@@ -52,7 +54,7 @@ class CHARM:
 
         local_attn_output=local_attn_output + dense
 
-        encoder_output = tf.squeeze(Encoder_f(transformer_layers, mlp_dim, num_heads, tf.expand_dims(local_attn_output, axis=0)))
+        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
 
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
 
