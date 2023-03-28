@@ -59,7 +59,7 @@ class DataGenerator(tf.keras.utils.Sequence):
                 features = hdf5_file['features'][:]
                 neighbor_indices = hdf5_file['indices'][:]
                 if self.dataset == "camelyon":
-                    self.values = hdf5_file['similarities_{}'.format(self.fold_id)][:]
+                    self.values = hdf5_file['similarities_0'.format(self.fold_id)][:]
                 elif self.dataset == "tcga":
                     self.values = hdf5_file['similarities_{}'.format(self.fold_id)][:]
                 elif self.dataset == "ovarian":
