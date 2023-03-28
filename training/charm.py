@@ -15,8 +15,7 @@ from collections import deque
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import BinaryCrossentropy
 from training.metrics import eval_metric
-from training.transformers import Encoder_f
-from nystromformer.nystromformer import Nystromformer, NystromAttention
+from nystromformer.nystromformer import NystromAttention
 
 
 class CHARM:
@@ -54,7 +53,7 @@ class CHARM:
         encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
 
-        #encoder_output= local_attn_output+encoder_output
+        encoder_output= local_attn_output+encoder_output
 
         k_alpha= self.attcls(encoder_output)
         attn_output = tf.keras.layers.multiply([k_alpha, encoder_output])
