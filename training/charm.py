@@ -16,7 +16,7 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import BinaryCrossentropy
 from training.metrics import eval_metric
 from training.transformers import Encoder_f
-from nystromformer.nystromformer import Nystromformer
+from nystromformer.nystromformer import Nystromformer, NystromAttention
 
 
 class CHARM:
@@ -34,11 +34,8 @@ class CHARM:
         self.input_shape = args.input_shape
         self.args = args
         self.wv = tf.keras.layers.Dense(512)
-        transformer_layers = 1
-        num_heads = 1
-        mlp_dim = 128
 
-        self.nyst_att = Nystromformer(dim=512,dim_head=64,heads=8,depth=1,num_landmarks=256,pinv_iterations=6)
+        self.nyst_att = NystromAttention(dim=512,dim_head=64,heads=8,num_landmarks=256,pinv_iterations=6)
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
         self.inputs = {
             'bag': Input(self.input_shape),
@@ -55,8 +52,9 @@ class CHARM:
         local_attn_output=local_attn_output + dense
 
         encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
-
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
+
+        #encoder_output= local_attn_output+encoder_output
 
         k_alpha= self.attcls(encoder_output)
         attn_output = tf.keras.layers.multiply([k_alpha, encoder_output])
@@ -64,7 +62,7 @@ class CHARM:
         out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
                            pooling_mode='sum', subtyping=False)(attn_output)
 
-        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha])
+        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, local_attn_output])
 
     @property
     def model(self):
@@ -201,11 +199,6 @@ class CHARM:
 
         callbacks.on_train_end(logs=logs)
 
-        history_object = None
-        for cb in callbacks:
-            if isinstance(cb, tf.keras.callbacks.History):
-                history_object = cb
-        assert history_object is not None
 
     def predict(self, test_bags, fold, args, test_model):
 

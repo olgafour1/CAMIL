@@ -5,6 +5,7 @@ import os
 from flushed_print import print
 import tensorflow as tf
 import numpy as np
+import gc
 
 def set_seed(seed: int = 42) -> None:
   import random
@@ -35,7 +36,9 @@ if __name__ == "__main__":
     auc=[]
     precision=[]
 
-    for csv_file in os.listdir(csv_files):
+
+    for csv_file in sorted(os.listdir(csv_files)):
+
 
             fold_id = os.path.splitext(csv_file)[0].split("_")[1]
 
@@ -56,7 +59,6 @@ if __name__ == "__main__":
             test_bags = references.apply(lambda row: func_val(row.test), axis=1).dropna().values.tolist()
 
             train_net = CHARM(args)
-
             train_net.train(train_bags, fold_id, val_bags, args)
 
             test_net = CHARM(args)
@@ -64,7 +66,7 @@ if __name__ == "__main__":
             test_acc, test_auc, test_precision, test_recall, test_f_score = test_net.predict(test_bags,
                                                                                                  fold_id,
                                                                                                  args,
-                                                                                                 test_model=test_net.model)
+                                                                                               test_model=test_net.model)
             acc.append(test_acc)
             recall.append(test_recall)
             f_score.append(test_f_score)
