@@ -48,17 +48,17 @@ class CHARM:
         value = self.wv(dense)
         local_attn_output = multiply([norm_alpha, value], name="mul_1")
 
-        # local_attn_output=local_attn_output + dense
-        # encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
-        # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
-        #
-        # encoder_output= local_attn_output+encoder_output
-        # #
-        # k_alpha= self.attcls(local_attn_output)
-        # attn_output = tf.keras.layers.multiply([k_alpha, local_attn_output])
+        local_attn_output=local_attn_output + dense
+        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
+        encoder_output = tf.ensure_shape(encoder_output, [None, 512])
+
+        encoder_output= local_attn_output+encoder_output
+
+        k_alpha= self.attcls(encoder_output)
+        attn_output = tf.keras.layers.multiply([k_alpha, encoder_output])
 
         out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
-                           pooling_mode='sum', subtyping=False)(local_attn_output)
+                           pooling_mode='sum', subtyping=False)(attn_output)
 
         self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, local_attn_output])
 
