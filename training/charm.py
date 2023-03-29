@@ -49,7 +49,6 @@ class CHARM:
         local_attn_output = multiply([norm_alpha, value], name="mul_1")
 
         # local_attn_output=local_attn_output + dense
-        #
         # encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
         # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
         #
