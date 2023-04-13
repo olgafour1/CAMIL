@@ -15,6 +15,7 @@ from collections import deque
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import BinaryCrossentropy
 from training.metrics import eval_metric
+from tensorflow.keras import backend as K
 from nystromformer.nystromformer import NystromAttention
 
 
@@ -54,8 +55,12 @@ class CHARM:
         #
         # encoder_output = local_attn_output+encoder_output
 
-        k_alpha= self.attcls(dense)
-        attn_output = tf.keras.layers.multiply([k_alpha, dense])
+        # k_alpha= self.attcls(dense)
+        # attn_output = tf.keras.layers.multiply([k_alpha, dense])
+
+        attn_output = K.max(dense, axis=0, keepdims=True)
+
+        # compute bag-level score
 
         out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
                            pooling_mode='sum', subtyping=False)(attn_output)
