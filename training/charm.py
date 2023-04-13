@@ -58,7 +58,7 @@ class CHARM:
         # k_alpha= self.attcls(dense)
         # attn_output = tf.keras.layers.multiply([k_alpha, dense])
 
-        attn_output = K.max(dense, axis=0, keepdims=True)
+        attn_output = K.mean(dense, axis=0, keepdims=True)
 
         # compute bag-level score
 
