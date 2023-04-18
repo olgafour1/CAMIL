@@ -230,9 +230,9 @@ class CHARM:
         @tf.function(experimental_relax_shapes=True)
         def test_step(images, labels):
 
-            pred, scores = test_model(images, training=False)
-            pred = tf.reduce_mean(pred, axis=0)
-            eval_accuracy_metric.update_state(labels, tf.argmax(pred, 1))
+            Y, scores = test_model(images, training=False)
+            pred = tf.reduce_mean(Y, axis=0)
+            eval_accuracy_metric.update_state(labels, tf.argmax(Y, 1))
             return pred
 
         y_pred = []
@@ -244,10 +244,10 @@ class CHARM:
                 # pred= test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
                 pred = test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
                 y_true.append(np.expand_dims(y_batch_val, axis=0))
-                y_pred.append(pred.numpy().tolist()[0])
+                y_pred.append(pred.numpy().tolist())
 
 
-        macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred, y_true)
+
         y_pred = np.reshape(y_pred, (-1, 2))
 
         macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred[:, 1], y_true)
