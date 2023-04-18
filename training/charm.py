@@ -58,8 +58,8 @@ class CHARM:
         k_alpha= self.attcls(encoder_output)
         attn_output = tf.keras.layers.multiply([k_alpha, encoder_output])
 
-        out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
-                           pooling_mode='sum', subtyping=False)(attn_output)
+        out = Last_Sigmoid(output_dim=2, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
+                           pooling_mode='sum', subtyping=True)(attn_output)
 
         self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, dense])
 
@@ -117,11 +117,11 @@ class CHARM:
                                              mode="min",
                                              reduce_lin=False)
 
-        loss_fn = BinaryCrossentropy(from_logits=False)
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)
         train_loss_tracker = tf.keras.metrics.Mean()
         val_loss_tracker = tf.keras.metrics.Mean()
-        train_acc_metric = tf.keras.metrics.BinaryAccuracy()
-        val_acc_metric = tf.keras.metrics.BinaryAccuracy()
+        train_acc_metric = tf.keras.metrics.Accuracy()
+        val_acc_metric = tf.keras.metrics.Accuracy()
 
         @tf.function(experimental_relax_shapes=True)
         def train_step(x, y):
@@ -134,14 +134,16 @@ class CHARM:
             optimizer.apply_gradients(zip(grads, self.net.trainable_weights))
             train_loss_tracker.update_state(loss_value)
 
-            train_acc_metric.update_state(y, logits)
+            #train_acc_metric.update_state(y, logits)
+
+            train_acc_metric.update_state(y, tf.argmax(logits, 1))
             return {"train_loss": train_loss_tracker.result(), "train_accuracy": train_acc_metric.result()}
 
         @tf.function(experimental_relax_shapes=True)
         def val_step(x, y):
             logits, scores = self.net(x, training=False)
             val_loss = loss_fn(y, logits)
-            val_acc_metric.update_state(y, logits)
+            val_acc_metric.update_state(y, tf.argmax(logits, 1))
             val_loss_tracker.update_state(val_loss)
             return val_loss
 
@@ -216,7 +218,7 @@ class CHARM:
         auc       : float reffering to the transformer_k auc
         """
 
-        eval_accuracy_metric = tf.keras.metrics.BinaryAccuracy()
+        eval_accuracy_metric = tf.keras.metrics.Accuracy()
 
         checkpoint_path = os.path.join(os.path.join(args.save_dir, fold, args.experiment_name),
                                        "{}.ckpt".format(args.experiment_name))
@@ -229,7 +231,8 @@ class CHARM:
         def test_step(images, labels):
 
             pred, scores = test_model(images, training=False)
-            eval_accuracy_metric.update_state(labels, pred)
+            pred = tf.reduce_mean(pred, axis=0)
+            eval_accuracy_metric.update_state(labels, tf.argmax(pred, 1))
             return pred
 
         y_pred = []
@@ -247,7 +250,7 @@ class CHARM:
         macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred, y_true)
 
         test_acc = eval_accuracy_metric.result()
-        print("Test acc: %.4f" % (float(macc_0),))
+        print("Test acc: %.4f" % (float(test_acc),))
 
         auc = roc_auc_score(y_true, y_pred, average="macro")
         print("AUC {}".format(auc))
