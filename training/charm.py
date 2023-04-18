@@ -248,19 +248,17 @@ class CHARM:
 
 
         macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred, y_true)
+        y_pred = np.reshape(y_pred, (-1, 2))
+
+        macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred[:, 1], y_true)
+        print(macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0)
 
         test_acc = eval_accuracy_metric.result()
-        print("Test acc: %.4f" % (float(test_acc),))
+        print(test_acc)
+        print("Test acc: %.4f" % (float(macc_0),))
 
-        auc = roc_auc_score(y_true, y_pred, average="macro")
+        auc = roc_auc_score(y_true, y_pred[:, 1], average="macro")
+
         print("AUC {}".format(auc))
 
-        precision = precision_score(y_true, np.round(np.clip(y_pred, 0, 1)), average="macro")
-        print("precision {}".format(precision))
-
-        recall = recall_score(y_true, np.round(np.clip(y_pred, 0, 1)), average="macro")
-        print("recall {}".format(recall))
-
-        fscore = f1_score(y_true, np.round(np.clip(y_pred, 0, 1)), average="macro")
-
-        return test_acc, auc, precision, recall, fscore
+        return test_acc, auc, mF1_0
