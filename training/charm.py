@@ -147,7 +147,7 @@ class CHARM:
             val_loss_tracker.update_state(val_loss)
             return val_loss
 
-        early_stopping = 20
+        early_stopping = 10
         loss_history = deque(maxlen=early_stopping + 1)
         reduce_rl_plateau.on_train_begin()
         for epoch in range(args.epochs):
@@ -245,7 +245,6 @@ class CHARM:
                 pred = test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
                 y_true.append(np.expand_dims(y_batch_val, axis=0))
                 y_pred.append(pred.numpy().tolist())
-
 
 
         y_pred = np.reshape(y_pred, (-1, 2))
