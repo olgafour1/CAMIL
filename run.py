@@ -35,7 +35,8 @@ if __name__ == "__main__":
     auc=[]
     precision=[]
 
-    fold_id = os.path.splitext(csv_file)[0].split("_")[1]
+    fold_id = os.path.splitext(csv_file)[0].split("_")[3]
+    print (fold_id)
 
     os.makedirs(os.path.join(args.simclr_path, "fold_{}".format(fold_id)), exist_ok=True)
 
