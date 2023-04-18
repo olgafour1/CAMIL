@@ -254,8 +254,10 @@ class CHARM:
         print(macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0)
 
         test_acc = eval_accuracy_metric.result()
-        print(test_acc)
+        print("Test acc: %.4f" % (float(test_acc),))
         print("Test acc: %.4f" % (float(macc_0),))
+
+        print("F_score: %.4f" % (float(mF1_0),))
 
         auc = roc_auc_score(y_true, y_pred[:, 1], average="macro")
 
