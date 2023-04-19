@@ -4,7 +4,7 @@ import os
 import h5py
 import pandas as pd
 from sklearn import preprocessing
-
+from sklearn.preprocessing import OneHotEncoder
 class DataGenerator(tf.keras.utils.Sequence):
     def __init__(self, filenames, fold_id, args, shuffle=False, train=True, batch_size=1):
         self.filenames = filenames
@@ -16,6 +16,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.shuffle = shuffle
         self.label_file = args.label_file
         self.on_epoch_end()
+
+        self.enc = OneHotEncoder(handle_unknown='ignore')
 
     def __len__(self):
         'Denotes the number of batches per epoch'
@@ -36,7 +38,7 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         X, f, y = self.__data_generation(list_IDs_temp)
 
-        return (X, f), np.asarray(y, np.float32)
+        return (X, f), y
 
     def __data_generation(self, filenames):
         """
@@ -84,11 +86,16 @@ class DataGenerator(tf.keras.utils.Sequence):
                             bag_label = references["val_label"].loc[references["val"] == base_name].values.tolist()[0]
                     else:
                         bag_label = references["test_label"].loc[references["test"] == base_name].values.tolist()[0]
+
                 elif self.dataset == "tcga":
                     bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
                 elif self.dataset == "sarcoma":
                     bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
                
+                if bag_label==0:
+                    bag_label=np.array([[1, 0]])
+                else:
+                    bag_label=np.array([[0, 1]])
 
         adjacency_matrix = self.get_affinity(neighbor_indices[:, :self.k + 1])
 
