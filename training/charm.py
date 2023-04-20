@@ -66,7 +66,7 @@ class CHARM:
         out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
                            pooling_mode='sum', subtyping=False)(attn_output)
 
-        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, dense])
+        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha])
 
     @property
     def model(self):
