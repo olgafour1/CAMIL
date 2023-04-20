@@ -117,11 +117,11 @@ class CHARM:
                                              mode="min",
                                              reduce_lin=False)
 
-        loss_fn = tf.keras.losses.CategoricalCrossentropy()
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
         train_loss_tracker = tf.keras.metrics.Mean()
         val_loss_tracker = tf.keras.metrics.Mean()
-        train_acc_metric = tf.keras.metrics.CategoricalAccuracy()
-        val_acc_metric = tf.keras.metrics.CategoricalAccuracy()
+        train_acc_metric = tf.keras.metrics.Accuracy()
+        val_acc_metric = tf.keras.metrics.Accuracy()
 
         @tf.function(experimental_relax_shapes=True)
         def train_step(x, y):
@@ -134,16 +134,16 @@ class CHARM:
             optimizer.apply_gradients(zip(grads, self.net.trainable_weights))
             train_loss_tracker.update_state(loss_value)
 
-            train_acc_metric.update_state(y, logits)
-            # train_acc_metric.update_state(y, tf.argmax(logits, 1))
+            #train_acc_metric.update_state(y, logits)
+            train_acc_metric.update_state(y, tf.argmax(logits, 1))
             return {"train_loss": train_loss_tracker.result(), "train_accuracy": train_acc_metric.result()}
 
         @tf.function(experimental_relax_shapes=True)
         def val_step(x, y):
             logits, scores = self.net(x, training=False)
             val_loss = loss_fn(y, logits)
-            #val_acc_metric.update_state(y, tf.argmax(logits, 1))
-            val_acc_metric.update_state(y, logits)
+            val_acc_metric.update_state(y, tf.argmax(logits, 1))
+            #val_acc_metric.update_state(y, logits)
             val_loss_tracker.update_state(val_loss)
             return val_loss
 
@@ -163,9 +163,9 @@ class CHARM:
 
                 callbacks.on_batch_begin(step, logs=logs)
                 callbacks.on_train_batch_begin(step, logs=logs)
-                #train_dict = train_step(x_batch_train, np.expand_dims(y_batch_train, axis=0))
+                train_dict = train_step(x_batch_train, np.expand_dims(y_batch_train, axis=0))
 
-                train_dict = train_step(x_batch_train, y_batch_train)
+
 
                 logs["train_loss"] = train_dict["train_loss"]
 
@@ -180,8 +180,7 @@ class CHARM:
             for step, (x_batch_val, y_batch_val) in enumerate(val_gen):
                 callbacks.on_batch_begin(step, logs=logs)
                 callbacks.on_test_batch_begin(step, logs=logs)
-                #val_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
-                val_step(x_batch_val, y_batch_val)
+                val_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
 
                 callbacks.on_test_batch_end(step, logs=logs)
                 callbacks.on_batch_end(step, logs=logs)
@@ -221,7 +220,7 @@ class CHARM:
         auc       : float reffering to the transformer_k auc
         """
 
-        eval_accuracy_metric = tf.keras.metrics.CategoricalAccuracy()
+        eval_accuracy_metric = tf.keras.metrics.Accuracy()
         checkpoint_path = os.path.join(os.path.join(args.save_dir, fold, args.experiment_name),
                                        "{}.ckpt".format(args.experiment_name))
         test_model.load_weights(checkpoint_path)
@@ -234,8 +233,8 @@ class CHARM:
 
             Y, scores = test_model(images, training=False)
             pred = tf.reduce_mean(Y, axis=0)
-            #eval_accuracy_metric.update_state(labels, tf.argmax(Y, 1))
-            eval_accuracy_metric.update_state(labels, Y)
+            eval_accuracy_metric.update_state(labels, tf.argmax(Y, 1))
+
             return pred
 
         y_pred = []
@@ -247,9 +246,9 @@ class CHARM:
                 # pred= test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
                 #pred = test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
                 pred = test_step(x_batch_val, y_batch_val)
-                #y_true.append(np.expand_dims(y_batch_val, axis=0))
+                y_true.append(np.expand_dims(y_batch_val, axis=0))
 
-                y_true.append(np.argmax(y_batch_val, axis=1))
+
                 y_pred.append(pred.numpy().tolist())
 
 

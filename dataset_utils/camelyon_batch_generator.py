@@ -38,7 +38,7 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         X, f, y = self.__data_generation(list_IDs_temp)
 
-        return (X, f), y
+        return (X, f), np.array(y, dtype=np.float32)
 
     def __data_generation(self, filenames):
         """
@@ -92,10 +92,6 @@ class DataGenerator(tf.keras.utils.Sequence):
                 elif self.dataset == "sarcoma":
                     bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
                
-                if bag_label==0:
-                    bag_label=np.array([[1, 0]])
-                else:
-                    bag_label=np.array([[0, 1]])
 
         adjacency_matrix = self.get_affinity(neighbor_indices[:, :self.k + 1])
 
