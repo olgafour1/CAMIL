@@ -27,7 +27,7 @@ if __name__ == "__main__":
     print(args)
 
     adj_dim = None
-    set_seed(12321)
+    set_seed(32)
 
     csv_file=args.csv_file
     acc=[]

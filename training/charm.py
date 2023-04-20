@@ -247,8 +247,6 @@ class CHARM:
                 #pred = test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
                 pred = test_step(x_batch_val, y_batch_val)
                 y_true.append(np.expand_dims(y_batch_val, axis=0))
-
-
                 y_pred.append(pred.numpy().tolist())
 
 
