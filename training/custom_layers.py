@@ -301,4 +301,3 @@ class get_high_attended_patches(tf.keras.layers.Layer):
         high_attended_patches = tf.gather(features, max_indices)
 
         return high_attended_patches
-

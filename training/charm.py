@@ -2,7 +2,7 @@ import os
 import numpy as np
 from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score
 import tensorflow as tf
-from tensorflow.keras.callbacks import  CallbackList
+from tensorflow.keras.callbacks import CallbackList
 from training.custom_callbacks import CustomReduceLRoP
 from tensorflow.keras.layers import Input, Dense, multiply
 from tensorflow.keras.models import Model
@@ -35,7 +35,7 @@ class CHARM:
         self.args = args
         self.wv = tf.keras.layers.Dense(512)
 
-        self.nyst_att = NystromAttention(dim=512,dim_head=64,heads=8,num_landmarks=256,pinv_iterations=6)
+        self.nyst_att = NystromAttention(dim=512, dim_head=64, heads=8, num_landmarks=256, pinv_iterations=6)
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
         self.inputs = {
             'bag': Input(self.input_shape),
@@ -43,23 +43,28 @@ class CHARM:
         }
 
         dense = Dense(512, activation='relu')(self.inputs['bag'])
-        attention_matrix = CustomAttention(weight_params_dim=256)(dense)
+
+        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
+        encoder_output = tf.ensure_shape(encoder_output, [None, 512])
+        encoder_output = encoder_output + dense
+
+        attention_matrix = CustomAttention(weight_params_dim=256)(encoder_output)
         norm_alpha, alpha = NeighborAggregator(output_dim=1, name="alpha")(
             [attention_matrix, self.inputs["adjacency_matrix"]])
         value = self.wv(dense)
         local_attn_output = multiply([norm_alpha, value], name="mul_1")
 
-        local_attn_output = local_attn_output + dense
-        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
-        encoder_output = tf.ensure_shape(encoder_output, [None, 512])
+        local_attn_output = local_attn_output + encoder_output
+        # encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
+        # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
+        #
+        # encoder_output = local_attn_output + encoder_output
 
-        encoder_output = local_attn_output+encoder_output
+        k_alpha = self.attcls(local_attn_output)
+        attn_output = tf.keras.layers.multiply([k_alpha, local_attn_output])
 
-        k_alpha= self.attcls(encoder_output)
-        attn_output = tf.keras.layers.multiply([k_alpha, encoder_output])
-
-        out = Last_Sigmoid(output_dim=2, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
-                           pooling_mode='sum', subtyping=True)(attn_output)
+        out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
+                           pooling_mode='sum', subtyping=False)(attn_output)
 
         self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, dense])
 
@@ -85,8 +90,8 @@ class CHARM:
         """
 
         train_gen = DataGenerator(args=args, fold_id=fold, batch_size=1, shuffle=False, filenames=train_bags,
-                                      train=True)
-        val_gen = DataGenerator(args=args, fold_id=fold, batch_size=1, shuffle=False,filenames=val_bags, train=True)
+                                  train=True)
+        val_gen = DataGenerator(args=args, fold_id=fold, batch_size=1, shuffle=False, filenames=val_bags, train=True)
 
         if not os.path.exists(os.path.join(args.save_dir, fold)):
             os.makedirs(os.path.join(args.save_dir, fold, args.experiment_name), exist_ok=True)
@@ -117,33 +122,31 @@ class CHARM:
                                              mode="min",
                                              reduce_lin=False)
 
-        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+        loss_fn = BinaryCrossentropy(from_logits=False)
         train_loss_tracker = tf.keras.metrics.Mean()
         val_loss_tracker = tf.keras.metrics.Mean()
-        train_acc_metric = tf.keras.metrics.Accuracy()
-        val_acc_metric = tf.keras.metrics.Accuracy()
+        train_acc_metric = tf.keras.metrics.BinaryAccuracy()
+        val_acc_metric = tf.keras.metrics.BinaryAccuracy()
 
         @tf.function(experimental_relax_shapes=True)
         def train_step(x, y):
             with tf.GradientTape() as tape:
                 logits, scores = self.net(x, training=True)
 
-                loss_value = loss_fn (y, logits)
+                loss_value = loss_fn(y, logits)
 
             grads = tape.gradient(loss_value, self.net.trainable_weights)
             optimizer.apply_gradients(zip(grads, self.net.trainable_weights))
             train_loss_tracker.update_state(loss_value)
 
-            #train_acc_metric.update_state(y, logits)
-            train_acc_metric.update_state(y, tf.argmax(logits, 1))
+            train_acc_metric.update_state(y, logits)
             return {"train_loss": train_loss_tracker.result(), "train_accuracy": train_acc_metric.result()}
 
         @tf.function(experimental_relax_shapes=True)
         def val_step(x, y):
             logits, scores = self.net(x, training=False)
             val_loss = loss_fn(y, logits)
-            val_acc_metric.update_state(y, tf.argmax(logits, 1))
-            #val_acc_metric.update_state(y, logits)
+            val_acc_metric.update_state(y, logits)
             val_loss_tracker.update_state(val_loss)
             return val_loss
 
@@ -164,8 +167,6 @@ class CHARM:
                 callbacks.on_batch_begin(step, logs=logs)
                 callbacks.on_train_batch_begin(step, logs=logs)
                 train_dict = train_step(x_batch_train, np.expand_dims(y_batch_train, axis=0))
-
-
 
                 logs["train_loss"] = train_dict["train_loss"]
 
@@ -202,7 +203,6 @@ class CHARM:
 
         callbacks.on_train_end(logs=logs)
 
-
     def predict(self, test_bags, fold, args, test_model):
 
         """
@@ -220,21 +220,18 @@ class CHARM:
         auc       : float reffering to the transformer_k auc
         """
 
-        eval_accuracy_metric = tf.keras.metrics.Accuracy()
+        eval_accuracy_metric = tf.keras.metrics.BinaryAccuracy()
+
         checkpoint_path = os.path.join(os.path.join(args.save_dir, fold, args.experiment_name),
                                        "{}.ckpt".format(args.experiment_name))
         test_model.load_weights(checkpoint_path)
 
         test_gen = DataGenerator(args=args, fold_id=fold, batch_size=1, filenames=test_bags, train=False)
 
-
         @tf.function(experimental_relax_shapes=True)
         def test_step(images, labels):
-
-            Y, scores = test_model(images, training=False)
-            pred = tf.reduce_mean(Y, axis=0)
-            eval_accuracy_metric.update_state(labels, tf.argmax(Y, 1))
-
+            pred, scores = test_model(images, training=False)
+            eval_accuracy_metric.update_state(labels, pred)
             return pred
 
         y_pred = []
@@ -242,27 +239,28 @@ class CHARM:
         os.makedirs(args.raw_save_dir, exist_ok=True)
 
         for enum, (x_batch_val, y_batch_val) in enumerate(test_gen):
-                slide_id = os.path.splitext(os.path.basename(test_bags[enum]))[0]
-                # pred= test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
-                #pred = test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
-                pred = test_step(x_batch_val, y_batch_val)
-                y_true.append(np.expand_dims(y_batch_val, axis=0))
-                y_pred.append(pred.numpy().tolist())
+            slide_id = os.path.splitext(os.path.basename(test_bags[enum]))[0]
+            # pred= test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
+            pred = test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
+            y_true.append(np.expand_dims(y_batch_val, axis=0))
+            y_pred.append(pred.numpy().tolist()[0])
 
-
-        y_pred = np.reshape(y_pred, (-1, 2))
-
-        macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred[:, 1], y_true)
-        print(macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0)
+        macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred, y_true)
 
         test_acc = eval_accuracy_metric.result()
-        print("Test acc: %.4f" % (float(test_acc),))
         print("Test acc: %.4f" % (float(macc_0),))
 
-        print("F_score: %.4f" % (float(mF1_0),))
-
-        auc = roc_auc_score(y_true, y_pred[:, 1], average="macro")
-
+        auc = roc_auc_score(y_true, y_pred, average="macro")
         print("AUC {}".format(auc))
 
-        return test_acc, auc, mF1_0
+        precision = precision_score(y_true, np.round(np.clip(y_pred, 0, 1)), average="macro")
+        print("precision {}".format(precision))
+
+        recall = recall_score(y_true, np.round(np.clip(y_pred, 0, 1)), average="macro")
+        print("recall {}".format(recall))
+
+        fscore = f1_score(y_true, np.round(np.clip(y_pred, 0, 1)), average="macro")
+
+        return test_acc, auc, precision, recall, fscore
+
+
