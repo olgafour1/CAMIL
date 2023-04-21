@@ -42,11 +42,11 @@ class CHARM:
             'adjacency_matrix': Input(shape=(None, None), dtype='float32', name='adjacency_matrix', sparse=True)
         }
 
-        encoder_output = Dense(512, activation='relu')(self.inputs['bag'])
+        dense = Dense(512, activation='relu')(self.inputs['bag'])
 
-        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(encoder_output, axis=0)))
+        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
-        encoder_output = encoder_output + encoder_output
+        encoder_output = encoder_output + dense
 
         attention_matrix = CustomAttention(weight_params_dim=256)(encoder_output)
         norm_alpha, alpha = NeighborAggregator(output_dim=1, name="alpha")(
@@ -54,7 +54,7 @@ class CHARM:
         value = self.wv(encoder_output)
         local_attn_output = multiply([norm_alpha, value], name="mul_1")
 
-        #local_attn_output = local_attn_output + encoder_output
+        local_attn_output = local_attn_output + encoder_output
         # encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(local_attn_output, axis=0)))
         # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
         #
