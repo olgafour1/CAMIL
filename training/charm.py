@@ -62,13 +62,13 @@ class CHARM:
         #
         # encoder_output = local_attn_output + encoder_output
         #
-        k_alpha = self.attcls(local_attn_output)
-        attn_output = tf.keras.layers.multiply([k_alpha, local_attn_output])
+        # k_alpha = self.attcls(local_attn_output)
+        # attn_output = tf.keras.layers.multiply([k_alpha, local_attn_output])
 
         out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
-                           pooling_mode='max', subtyping=False)(attn_output)
+                           pooling_mode='sum', subtyping=False)(local_attn_output)
 
-        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha])
+        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, dense])
 
     @property
     def model(self):
