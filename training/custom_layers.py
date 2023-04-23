@@ -201,11 +201,12 @@ class Last_Sigmoid(tf.keras.layers.Layer):
     def call(self, x):
 
         if self.subtyping:
-            x = K.sum(x, axis=0, keepdims=True)
+            x = K.max(x, axis=0, keepdims=True)
             x = K.dot(x, self.kernel)
             if self.use_bias:
                 x = K.bias_add(x, self.bias)
-            out = K.softmax(x)
+            out = K.sigmoid(x)
+
 
         else:
             x = K.sum(x, axis=0, keepdims=True)
