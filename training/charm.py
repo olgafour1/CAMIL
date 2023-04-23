@@ -49,7 +49,7 @@ class CHARM:
 
         encoder_output =   encoder_output + dense
 
-        attention_matrix = CustomAttention(weight_params_dim=256)(dense)
+        attention_matrix = CustomAttention(weight_params_dim=256)(encoder_output)
         norm_alpha, alpha = NeighborAggregator(output_dim=1, name="alpha")(
             [attention_matrix, self.inputs["adjacency_matrix"]])
         value = self.wv(dense)
