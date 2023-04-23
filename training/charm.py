@@ -44,10 +44,10 @@ class CHARM:
 
         dense = Dense(512, activation='relu')(self.inputs['bag'])
 
-        # encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
-        # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
-        #
-        # encoder_output =   encoder_output + dense
+        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
+        encoder_output = tf.ensure_shape(encoder_output, [None, 512])
+
+        encoder_output =   encoder_output + dense
 
         attention_matrix = CustomAttention(weight_params_dim=256)(dense)
         norm_alpha, alpha = NeighborAggregator(output_dim=1, name="alpha")(
@@ -61,12 +61,12 @@ class CHARM:
         # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
         #
         # encoder_output = local_attn_output + encoder_output
-
+        #
         k_alpha = self.attcls(local_attn_output)
         attn_output = tf.keras.layers.multiply([k_alpha, local_attn_output])
 
         out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
-                           pooling_mode='sum', subtyping=False)(attn_output)
+                           pooling_mode='max', subtyping=False)(attn_output)
 
         self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha])
 
