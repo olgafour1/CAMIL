@@ -163,16 +163,13 @@ class Last_Sigmoid(tf.keras.layers.Layer):
     """
 
     def __init__(self, output_dim, subtyping,kernel_initializer='glorot_uniform', bias_initializer='zeros',
-                 pooling_mode="sum",
-                 kernel_regularizer=None, bias_regularizer=None,norm=False,
+                 kernel_regularizer=None, bias_regularizer=None,
                  use_bias=True, **kwargs):
         self.output_dim = output_dim
-
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
-        self.pooling_mode = pooling_mode
         self.use_bias = use_bias
         self.subtyping=subtyping
 
