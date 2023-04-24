@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=6
 #SBATCH --time=8:00:00
 #SBATCH --gres=gpu:1
-#SBATCH --partition=gpu
+#SBATCH --partition=gpuhm
 
 module load anaconda/3
 source /opt/software/applications/anaconda/3/etc/profile.d/conda.sh
