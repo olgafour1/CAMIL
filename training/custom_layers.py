@@ -163,13 +163,16 @@ class Last_Sigmoid(tf.keras.layers.Layer):
     """
 
     def __init__(self, output_dim, subtyping,kernel_initializer='glorot_uniform', bias_initializer='zeros',
-                 kernel_regularizer=None, bias_regularizer=None,
+                 pooling_mode="sum",
+                 kernel_regularizer=None, bias_regularizer=None,norm=False,
                  use_bias=True, **kwargs):
         self.output_dim = output_dim
+
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
+        self.pooling_mode = pooling_mode
         self.use_bias = use_bias
         self.subtyping=subtyping
 
@@ -198,12 +201,11 @@ class Last_Sigmoid(tf.keras.layers.Layer):
     def call(self, x):
 
         if self.subtyping:
-            x = K.max(x, axis=0, keepdims=True)
+            x = K.sum(x, axis=0, keepdims=True)
             x = K.dot(x, self.kernel)
             if self.use_bias:
                 x = K.bias_add(x, self.bias)
-            out = K.sigmoid(x)
-
+            out = K.softmax(x)
 
         else:
             x = K.sum(x, axis=0, keepdims=True)
