@@ -68,7 +68,8 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
-
+mask
+lipo_csv_files
 
 results/
 results_fold0/

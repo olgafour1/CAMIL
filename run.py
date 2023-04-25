@@ -37,14 +37,12 @@ if __name__ == "__main__":
     precision=[]
 
     fold_id = os.path.splitext(csv_file)[0].split("_")[3]
-    print (fold_id)
 
     os.makedirs(os.path.join(args.simclr_path, "fold_{}".format(fold_id)), exist_ok=True)
 
     references = pd.read_csv(csv_file)
 
     train_bags = references["train"].apply(lambda x: os.path.join(args.feature_path, x + ".h5")).values.tolist()
-
 
     def func_val(x):
         value = None

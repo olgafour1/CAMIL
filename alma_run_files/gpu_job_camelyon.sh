@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=test_gpu
-#SBATCH --output=/home/ofourkioti/Projects/Neighbor_constrained_attention_based_MIL/camelyon_results/run_3.txt
+#SBATCH --output=/home/ofourkioti/Projects/Neighbor_constrained_attention_based_MIL/camelyon_results/encoder_first.txt
 #SBATCH --error=/home/ofourkioti/Projects/Neighbor_constrained_attention_based_MIL/camelyon_results/error.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=6
@@ -14,6 +14,6 @@ conda activate exp_env
 cd /home/ofourkioti/Projects/Neighbor_constrained_attention_based_MIL/
 
 for i in {0..4};
-do python run.py  --k 3 --experiment_name run_3  --feature_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/multi_magnification_project/camelyon_data/tf_feats_256/resnet_feats/h5_files --label_file label_files/camelyon_data.csv --csv_file camelyon_csv_files/splits_${i}.csv;
+do python run.py  --k 3 --experiment_name encoder_first  --feature_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/multi_magnification_project/camelyon_data/tf_feats_256/resnet_feats/h5_files --label_file label_files/camelyon_data.csv --csv_file camelyon_csv_files/splits_${i}.csv;
 done
 #python run_simclr.py --simclr_path  lipo_SIMCLR_checkpoints --feature_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/multi_magnification_project/SAR_data/simclr_imgs/h5_files/  --csv_file lipo_csv_files/splits_0.csv --simclr_batch_size 1024
