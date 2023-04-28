@@ -9,6 +9,4 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 <img src="ieee_figure.png" 
      alt="Cellshape logo by Matt De Vries">
 
-Using the publicly available CLAM WSI-prepossessing toolbox, we first automatically segmented the tissue region from each slide and exhaustively divided it into 256x256 non-overlapping patches using $\times 20$ magnification. It is important to note that using different parameters in the feature extraction process can lead to different training and test sets, which can subsequently result in different model performance. To ensure the reproducibility of our results, we provide the features that we used in our study.
-
-[h5_files](https://drive.google.com/drive/folders/1sJ4EuY08EIw6bpXoMcUhr0rga7YXyHot?usp=sharing)
+Using the publicly available CLAM WSI-prepossessing toolbox, we first automatically segmented the tissue region from each slide and exhaustively divided it into 256x256 non-overlapping patches using $\times 20$ magnification. It is important to note that using different parameters in the feature extraction process can lead to different training and test sets, which can subsequently result in different model performance. To ensure the reproducibility of our results, we provide the features that we used in our study.[h5_files](https://drive.google.com/drive/folders/1sJ4EuY08EIw6bpXoMcUhr0rga7YXyHot?usp=sharing)
