@@ -74,7 +74,7 @@ if __name__ == "__main__":
     auc =[]
     fscore=[]
 
-    csv_file=args.csv_files
+    csv_file=args.csv_file
 
     fold_id = os.path.splitext(csv_file)[0].split("_")[3]
 
