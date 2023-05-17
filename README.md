@@ -38,7 +38,7 @@ python extract_simclr_patches.py --simclr_h5_dir simclr_imgs/ --data_h5_dir  pat
 To run the simCLR model run:
 
 ```bash 
-python run_simclr.py --simclr_h5_dir simclr_imgs/ --data_h5_dir  patches/  --data_slide_dir  --csv_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/camelyon17/process_list_autogen.csv 
+python run_simclr.py --simclr_path  SIMCLR_checkpoints --feature_path patches/   --csv_file lipo_csv_files/splits_0.csv --simclr_batch_size 1024
 ```
 
 ## Usage
