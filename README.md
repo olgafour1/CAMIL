@@ -7,13 +7,13 @@ state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 <img src="ieee_figure.png" 
-     alt="Cellshape logo by Matt De Vries">
+     alt="model figure">
 
 ### To install
 
 We recommend creating a new conda environment. In the terminal, run:
 ```bash 
-conda env create --file exp.yml
+conda env create --file exp_env.yml
 
 pip install --upgrade pip
 ``` 
@@ -29,13 +29,18 @@ Using the publicly available CLAM WSI-prepossessing toolbox, we first automatica
 <img src="fig2_ieee.png" 
      alt="simCLR model">
 
+
+Due to the nature of SimCLR and its underlying mechanisms, using a batch size lower than 512 may result in suboptimal performance and diminished learning outcomes. The algorithm relies on a large batch size to effectively capture and learn from the diverse representations within the data. A smaller batch size could limit the model's ability to generalize well and extract meaningful features, potentially leading to reduced accuracy or convergence issues. Therefore, it is advisable to adhere to a batch size of 512 or higher for optimal results when utilizing SimCLR.
+
+
 The datasets used for
 SimCLR consist of patches extracted from the WSIs. To extract the patches run the folloqing command:
+If you do not have the necessary hardware resources to accommodate a batch size of 512 or higher, it may be best to skip the step of training SimCLR altogether.
 
 ```bash 
 python extract_simclr_patches.py --simclr_h5_dir simclr_imgs/ --data_h5_dir  patches/  --data_slide_dir  --csv_path /data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/camelyon17/process_list_autogen.csv --slide_ext .tif
 ```
-To run the simCLR model run:
+To train the simCLR model:
 
 ```bash 
 python run_simclr.py --simclr_path  SIMCLR_checkpoints --feature_path patches/   --csv_file lipo_csv_files/splits_0.csv --simclr_batch_size 1024
