@@ -5,6 +5,8 @@ import h5py
 import pandas as pd
 from sklearn import preprocessing
 from sklearn.preprocessing import OneHotEncoder
+
+
 class DataGenerator(tf.keras.utils.Sequence):
     def __init__(self, filenames, fold_id, args, shuffle=False, train=True, batch_size=1):
         self.filenames = filenames
@@ -61,11 +63,9 @@ class DataGenerator(tf.keras.utils.Sequence):
                 features = hdf5_file['features'][:]
                 neighbor_indices = hdf5_file['indices'][:]
                 if self.dataset == "camelyon":
-                    self.values = hdf5_file['similarities_0'.format(self.fold_id)][:]
+                    self.values = hdf5_file['similarities'.format(self.fold_id)][:]
                 elif self.dataset == "tcga":
-                    self.values = hdf5_file['similarities_{}'.format(self.fold_id)][:]
-                elif self.dataset == "ovarian":
-                    self.values = hdf5_file['similarities_{}'.format(self.fold_id)][:]
+                    self.values = hdf5_file['similarities'.format(self.fold_id)][:]
                 else:
                     raise NotImplementedError
 
@@ -81,7 +81,8 @@ class DataGenerator(tf.keras.utils.Sequence):
 
                     if self.train:
                         try:
-                            bag_label = references["train_label"].loc[references["train"] == base_name].values.tolist()[0]
+                            bag_label = references["train_label"].loc[references["train"] == base_name].values.tolist()[
+                                0]
                         except:
                             bag_label = references["val_label"].loc[references["val"] == base_name].values.tolist()[0]
                     else:
@@ -91,7 +92,6 @@ class DataGenerator(tf.keras.utils.Sequence):
                     bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
                 elif self.dataset == "sarcoma":
                     bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
-               
 
         adjacency_matrix = self.get_affinity(neighbor_indices[:, :self.k + 1])
 
@@ -113,11 +113,11 @@ class DataGenerator(tf.keras.utils.Sequence):
         columns = Idx.ravel()
 
         neighbor_matrix = self.values[:, 1:]
-        normalized_matrix =preprocessing.normalize(neighbor_matrix, norm="l2")
+        normalized_matrix = preprocessing.normalize(neighbor_matrix, norm="l2")
 
-        similarities = np.exp(-normalized_matrix )
+        similarities = np.exp(-normalized_matrix)
 
-        #values = np.concatenate((np.ones(Idx.shape[0]).reshape(-1, 1), similarities), axis=1)
+        # values = np.concatenate((np.ones(Idx.shape[0]).reshape(-1, 1), similarities), axis=1)
 
         values = np.concatenate((np.max(similarities, axis=1).reshape(-1, 1), similarities), axis=1)
 
@@ -125,11 +125,10 @@ class DataGenerator(tf.keras.utils.Sequence):
         values = values.ravel().tolist()
 
         sparse_matrix = tf.sparse.SparseTensor(indices=list(zip(rows, columns)),
-                                                   values=values,
-                                                   dense_shape=[Idx.shape[0], Idx.shape[0]])
+                                               values=values,
+                                               dense_shape=[Idx.shape[0], Idx.shape[0]])
         sparse_matrix = tf.sparse.reorder(sparse_matrix)
         #     sparse_matrix = tf.sparse.SparseTensor(indices=list(zip(rows, columns)),
         #                                            values=tf.ones(columns.shape, tf.float32),
         #                                            dense_shape=[Idx.shape[0], Idx.shape[0]])
         return sparse_matrix
-
