@@ -35,14 +35,16 @@ class CHARM:
         self.args = args
         self.wv = tf.keras.layers.Dense(512)
 
-        self.nyst_att = NystromAttention(dim=512, dim_head=64, heads=8, num_landmarks=256, pinv_iterations=6)
+        self.nyst_att = NystromAttention(dim=512, dim_head=64, heads=8, num_landmarks=512, pinv_iterations=6)
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
+
+
         self.inputs = {
             'bag': Input(self.input_shape),
             'adjacency_matrix': Input(shape=(None, None), dtype='float32', name='adjacency_matrix', sparse=True)
         }
 
-        dense = Dense(512, activation='relu')(self.inputs['bag'])
+        dense = self.inputs['bag']
 
         encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
@@ -53,17 +55,29 @@ class CHARM:
         norm_alpha, alpha = NeighborAggregator(output_dim=1, name="alpha")(
             [attention_matrix, self.inputs["adjacency_matrix"]])
         value = self.wv(dense)
-        local_attn_output = multiply([norm_alpha, value], name="mul_1")
+        xl = multiply([norm_alpha, value], name="mul_1")
+        #
+        # xg =  tf.reduce_sum(encoder_output, axis=0)
+        #
+        # xlg = xl + xg
+        #
+        # wei = tf.keras.activations.sigmoid(xlg)
 
-        local_attn_output = local_attn_output + encoder_output
+        #xo = 2 * wei * encoder_output + 2 * xl * (1 - wei)
 
-        k_alpha = self.attcls(local_attn_output)
-        attn_output = tf.keras.layers.multiply([k_alpha, local_attn_output])
+        xo = xl + encoder_output
 
-        out = Last_Sigmoid(output_dim=1, name='FC1_sigmoid_1', kernel_regularizer=l2(args.weight_decay),
-                           pooling_mode='sum', subtyping=False)(attn_output)
+        k_alpha = self.attcls(xo)
 
-        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha])
+        attn_output = tf.keras.layers.multiply([k_alpha, xo])
+
+        out = Last_Sigmoid(output_dim=1,
+                           name='FC1_sigmoid_1',
+                           kernel_regularizer=l2(1e-5, ),
+                           pooling_mode='sum',
+                           subtyping=False)(attn_output)
+
+        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha, alpha])
 
     @property
     def model(self):
@@ -128,7 +142,7 @@ class CHARM:
         @tf.function(experimental_relax_shapes=True)
         def train_step(x, y):
             with tf.GradientTape() as tape:
-                logits, scores = self.net(x, training=True)
+                logits, scores, k_alpha = self.net(x, training=True)
 
                 loss_value = loss_fn(y, logits)
 
@@ -141,7 +155,8 @@ class CHARM:
 
         @tf.function(experimental_relax_shapes=True)
         def val_step(x, y):
-            logits, scores = self.net(x, training=False)
+            logits, scores, k_alpha = self.net(x, training=False)
+
             val_loss = loss_fn(y, logits)
             val_acc_metric.update_state(y, logits)
             val_loss_tracker.update_state(val_loss)
@@ -227,7 +242,7 @@ class CHARM:
 
         @tf.function(experimental_relax_shapes=True)
         def test_step(images, labels):
-            pred, scores = test_model(images, training=False)
+            pred, scores, k_alpha = test_model(images, training=False)
             eval_accuracy_metric.update_state(labels, pred)
             return pred
 
@@ -237,12 +252,13 @@ class CHARM:
 
         for enum, (x_batch_val, y_batch_val) in enumerate(test_gen):
             slide_id = os.path.splitext(os.path.basename(test_bags[enum]))[0]
-            # pred= test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
+            # pred= test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))y
             pred = test_step(x_batch_val, np.expand_dims(y_batch_val, axis=0))
             y_true.append(np.expand_dims(y_batch_val, axis=0))
             y_pred.append(pred.numpy().tolist()[0])
 
         macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 = eval_metric(y_pred, y_true)
+        print (macc_0, mprec_0, mrecal_0, mspec_0, mF1_0, auc_0 )
 
         test_acc = eval_accuracy_metric.result()
         print("Test acc: %.4f" % (float(test_acc),))
@@ -259,5 +275,4 @@ class CHARM:
         fscore = f1_score(y_true, np.round(np.clip(y_pred, 0, 1)), average="macro")
 
         return test_acc, auc, fscore
-
 

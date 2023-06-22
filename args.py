@@ -34,25 +34,20 @@ def parse_args():
     parser.add_argument('--experiment_name', dest='experiment_name',help='the name of the experiment needed for the logs',default="test", type=str)
     parser.add_argument('--simclr_batch_size', dest='simclr_batch_size',help='batch size used bu the siamese network',default=512, type=int)
     parser.add_argument('--simclr_epochs', dest='simclr_epochs',help='epochs for siamese network',default=50, type=int)
-    parser.add_argument('--input_shape', dest="input_shape",help='shape of the image',default=(1024,), type=int, nargs=3)
+    parser.add_argument('--input_shape', dest="input_shape",help='shape of the image',default=(512,), type=int, nargs=3)
     parser.add_argument('--label_file', dest="label_file",help='csv file with information about the labels',default="label_files/camelyon_data.csv",type=str)
     parser.add_argument('--csv_file', dest="csv_file",help='csv file with information about the labels',default="camelyon_csv_files/splits_0.csv",type=str)
     parser.add_argument('--raw_save_dir', dest="raw_save_dir",help='directory where the attention weights are saved',default="heatmaps", type=str)
     parser.add_argument('--retrain', dest="retrain",action='store_true', default=False)
     parser.add_argument('--save_exp_code', type=str, default=None,help='experiment code')
     parser.add_argument('--overlap', type=float, default=None)
-    parser.add_argument('--config_file', type=str, default="heatmap_config_template.yaml")
+    parser.add_argument('--config_file', type=str, default="heatmap_config_camelyon.yaml")
     parser.add_argument('--subtyping', dest="subtyping",action='store_true', default=False)
 
 
     args = parser.parse_args()
     return args
 
-#/run/user/1001/gvfs/smb-share:server=rds.icr.ac.uk,share=data/DBI/DUDBI/DYNCESYS/OlgaF/camelyon_data/camelyon_features/h5_files/'
-#/run/user/1001/gvfs/smb-share:server=rds.icr.ac.uk,share=data/
-#/data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/TCGA_data/TCGA_flat
-#/data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/TCGA_data/TCGA_features/h5_files/
-#"/data/scratch/DBI/DUDBI/DYNCESYS/OlgaF/TCGA_data/TCGA_features/h5_files/"
 
 def set_seed(seed_value):
     os.environ['PYTHONHASHSEED'] = str(seed_value)
