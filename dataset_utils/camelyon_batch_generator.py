@@ -100,8 +100,6 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         similarities = np.exp(-normalized_matrix)
 
-        # values = np.concatenate((np.ones(Idx.shape[0]).reshape(-1, 1), similarities), axis=1)
-
         values = np.concatenate((np.max(similarities, axis=1).reshape(-1, 1), similarities), axis=1)
 
         values = values[:, :self.k + 1]
