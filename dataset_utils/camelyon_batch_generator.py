@@ -62,12 +62,8 @@ class DataGenerator(tf.keras.utils.Sequence):
 
                 features = hdf5_file['features'][:]
                 neighbor_indices = hdf5_file['indices'][:]
-                if self.dataset == "camelyon":
-                    self.values = hdf5_file['similarities'.format(self.fold_id)][:]
-                elif self.dataset == "tcga":
-                    self.values = hdf5_file['similarities'.format(self.fold_id)][:]
-                else:
-                    raise NotImplementedError
+
+                self.values = hdf5_file['similarities'.format(self.fold_id)][:]
 
                 if self.shuffle:
                     randomize = np.arange(neighbor_indices.shape[0])
@@ -77,21 +73,8 @@ class DataGenerator(tf.keras.utils.Sequence):
                     self.values = self.values[randomize]
 
                 references = pd.read_csv(self.label_file)
-                if self.dataset == "camelyon":
 
-                    if self.train:
-                        try:
-                            bag_label = references["train_label"].loc[references["train"] == base_name].values.tolist()[
-                                0]
-                        except:
-                            bag_label = references["val_label"].loc[references["val"] == base_name].values.tolist()[0]
-                    else:
-                        bag_label = references["test_label"].loc[references["test"] == base_name].values.tolist()[0]
-
-                elif self.dataset == "tcga":
-                    bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
-                elif self.dataset == "sarcoma":
-                    bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
+                bag_label = references["slide_label"].loc[references["slide_id"] == base_name].values.tolist()[0]
 
         adjacency_matrix = self.get_affinity(neighbor_indices[:, :self.k + 1])
 
