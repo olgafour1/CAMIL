@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=test_gpu
-#SBATCH --output=/home/mvries/SAD_MIL/cam_17_results/res_1.txt
-#SBATCH --error=/home/mvries/SAD_MIL/cam_17_results/error.err
+#SBATCH --output=/home/ofourkioti/Projects/Neighbor_constrained_attention_based_MIL/cam_17_results/only_local.txt
+#SBATCH --error=/home/ofourkioti/Projects/Neighbor_constrained_attention_based_MIL/cam_17_results/error.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=10
 #SBATCH --time=48:00:00
