@@ -46,12 +46,10 @@ class CHARM:
 
         dense = self.inputs['bag']
 
-        # encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
-        # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
-        #
-        # encoder_output =   encoder_output + dense
+        encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
+        encoder_output = tf.ensure_shape(encoder_output, [None, 512])
 
-        encoder_output = dense
+        encoder_output =  encoder_output + dense
 
         attention_matrix = CustomAttention(weight_params_dim=256)(encoder_output)
         norm_alpha, alpha = NeighborAggregator(output_dim=1, name="alpha")(
