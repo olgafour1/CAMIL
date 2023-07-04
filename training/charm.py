@@ -35,6 +35,7 @@ class CHARM:
         self.args = args
         self.wv = tf.keras.layers.Dense(512)
 
+
         self.nyst_att = NystromAttention(dim=512, dim_head=64, heads=8, num_landmarks=256, pinv_iterations=6)
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
 
@@ -44,7 +45,7 @@ class CHARM:
             'adjacency_matrix': Input(shape=(None, None), dtype='float32', name='adjacency_matrix', sparse=True)
         }
 
-        dense = self.inputs['bag']
+        dense = Dense(512, activation='relu')(self.inputs['bag'])
 
         # encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
         # encoder_output = tf.ensure_shape(encoder_output, [None, 512])
