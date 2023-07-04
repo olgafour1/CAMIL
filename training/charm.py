@@ -45,7 +45,7 @@ class CHARM:
             'adjacency_matrix': Input(shape=(None, None), dtype='float32', name='adjacency_matrix', sparse=True)
         }
 
-        dense = dense = Dense(512, activation='relu')(self.inputs['bag'])
+        dense = Dense(512, activation='relu')(self.inputs['bag'])
 
         encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
