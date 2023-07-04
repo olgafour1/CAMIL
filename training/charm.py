@@ -45,7 +45,7 @@ class CHARM:
             'adjacency_matrix': Input(shape=(None, None), dtype='float32', name='adjacency_matrix', sparse=True)
         }
 
-        dense = Dense(512, activation='relu')(self.inputs['bag'])
+        dense = dense = Dense(512, activation='relu')(self.inputs['bag'])
 
         encoder_output = tf.squeeze(self.nyst_att(tf.expand_dims(dense, axis=0)))
         encoder_output = tf.ensure_shape(encoder_output, [None, 512])
@@ -70,7 +70,7 @@ class CHARM:
                            pooling_mode='sum',
                            subtyping=False)(attn_output)
 
-        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, k_alpha, k_alpha])
+        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, k_alpha, alpha])
 
     @property
     def model(self):
