@@ -35,10 +35,8 @@ class CHARM:
         self.args = args
         self.wv = tf.keras.layers.Dense(512)
 
-
         self.nyst_att = NystromAttention(dim=512, dim_head=64, heads=8, num_landmarks=1024, pinv_iterations=6)
         self.attcls = MILAttentionLayer(weight_params_dim=128, use_gated=True, kernel_regularizer=l2(1e-5, ))
-
 
         self.inputs = {
             'bag': Input(self.input_shape),
