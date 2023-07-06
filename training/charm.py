@@ -68,7 +68,7 @@ class CHARM:
                            pooling_mode='sum',
                            subtyping=False)(attn_output)
 
-        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, k_alpha, alpha])
+        self.net = Model(inputs=[self.inputs['bag'], self.inputs["adjacency_matrix"]], outputs=[out, alpha, k_alpha])
 
     @property
     def model(self):
